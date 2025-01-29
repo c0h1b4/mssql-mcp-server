@@ -3,14 +3,18 @@ version: '3.8'
 services:
   mssql:
     image: mcr.microsoft.com/mssql/server:2022-latest
+    user: '0:0' # Run as root to avoid permission issues
     environment:
       - ACCEPT_EULA=Y
       - SA_PASSWORD=YourStrongPassword123!
       - MSSQL_PID=Developer
+      - MSSQL_AGENT_ENABLED=true
     ports:
-      - "1433:1433"
+      - '1433:1433'
     volumes:
       - mssql-data:/var/opt/mssql
+    cap_add:
+      - SYS_PTRACE
     healthcheck:
       test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P YourStrongPassword123! -Q 'SELECT 1' || exit 1
       interval: 10s
