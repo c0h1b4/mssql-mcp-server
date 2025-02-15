@@ -37,6 +37,14 @@ export interface DatabaseError extends Error {
   lineNumber?: number;
 }
 
+export interface McpError extends Error {
+  code: string;
+}
+
+export interface QueryResult {
+  recordset: Record<string, any>[];
+}
+
 export type EnvVars = {
   MSSQL_HOST?: string;
   MSSQL_PORT?: string;

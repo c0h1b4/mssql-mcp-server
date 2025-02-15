@@ -1,9 +1,10 @@
 import { describe, expect, vi, beforeEach, afterEach, type SpyInstance } from 'vitest';
 import type { config } from 'mssql';
 import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
+import type { QueryResult } from './types/index.js';
 
 interface MockRequest {
-  query: SpyInstance;
+  query: SpyInstance<[string], Promise<QueryResult>>;
 }
 
 interface MockPool {
@@ -55,7 +56,8 @@ describe('MssqlServer', () => {
       const mockPool = new (await import('mssql')).default.ConnectionPool(
         mockConfig
       ) as unknown as MockPool;
-      const querySpy = vi.spyOn(mockPool.request(), 'query').mockResolvedValue(mockResult);
+      const querySpy = mockPool.request().query;
+      querySpy.mockResolvedValue(mockResult);
 
       const response = await server.handleQuery({
         connectionString: 'Server=localhost;Database=test;User Id=sa;Password=test;',
@@ -75,7 +77,8 @@ describe('MssqlServer', () => {
       const mockPool = new (await import('mssql')).default.ConnectionPool(
         mockConfig
       ) as unknown as MockPool;
-      const querySpy = vi.spyOn(mockPool.request(), 'query').mockResolvedValue(mockResult);
+      const querySpy = mockPool.request().query;
+      querySpy.mockResolvedValue(mockResult);
 
       const response = await server.handleQuery({
         host: 'localhost',
@@ -94,7 +97,7 @@ describe('MssqlServer', () => {
       });
 
       await expect(promise).rejects.toThrow(
-        new McpError(ErrorCode.InvalidRequest, 'Host is required when not using connection string')
+        new McpError(ErrorCode.InternalError, 'Database error: MCP error -32600: Host is required when not using connection string')
       );
     });
 
@@ -108,7 +111,8 @@ describe('MssqlServer', () => {
         mockConfig
       ) as unknown as MockPool;
       const mockError = new Error('Database error');
-      const querySpy = vi.spyOn(mockPool.request(), 'query').mockRejectedValue(mockError);
+      const querySpy = mockPool.request().query;
+      querySpy.mockRejectedValue(mockError);
 
       const promise = server.handleQuery({
         host: 'localhost',

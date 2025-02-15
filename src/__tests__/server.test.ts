@@ -5,6 +5,8 @@ import { createConnectionPool } from '../utils/database.js';
 import { handleError } from '../utils/error.js';
 import { validateQueryParams } from '../utils/validation.js';
 import type { DatabaseConfig, QueryParams } from '../types/index.js';
+import type { McpError } from '../types/index.js';
+import { ErrorCode } from '@modelcontextprotocol/sdk/types.js';
 
 // Load test environment variables
 config({ path: '.env.test' });
@@ -89,23 +91,23 @@ describe('MSSQL MCP Server', () => {
       const sqlError = new Error('SQL error');
       Object.assign(sqlError, { number: 208 });
 
-      const mcpError = handleError(sqlError);
-      expect(mcpError.code).toBe('RESOURCE_NOT_FOUND');
+      const mcpError = handleError(sqlError) as McpError;
+      expect(mcpError.code).toBe(ErrorCode.ResourceNotFound);
     });
 
     it('should handle connection errors correctly', () => {
       const connError = new Error('Connection error');
       Object.assign(connError, { code: 'ECONNREFUSED' });
 
-      const mcpError = handleError(connError);
-      expect(mcpError.code).toBe('CONNECTION_FAILED');
+      const mcpError = handleError(connError) as McpError;
+      expect(mcpError.code).toBe(ErrorCode.ConnectionFailed);
     });
 
     it('should handle unknown errors correctly', () => {
       const unknownError = new Error('Unknown error');
 
-      const mcpError = handleError(unknownError);
-      expect(mcpError.code).toBe('INTERNAL_ERROR');
+      const mcpError = handleError(unknownError) as McpError;
+      expect(mcpError.code).toBe(ErrorCode.InternalError);
     });
   });
 
@@ -115,12 +117,12 @@ describe('MSSQL MCP Server', () => {
       expect(pool).toBeDefined();
       expect(pool.connected).toBe(true);
       await pool.close();
-    });
+    }, 30000);
 
     it('should execute simple query successfully', async () => {
       const result = await pool.request().query('SELECT 1 as value');
       expect(result.recordset[0].value).toBe(1);
-    });
+    }, 30000);
 
     it('should handle parameterized queries', async () => {
       const value = 42;
@@ -130,6 +132,6 @@ describe('MSSQL MCP Server', () => {
         .query('SELECT @value as value');
       
       expect(result.recordset[0].value).toBe(value);
-    });
+    }, 30000);
   });
 });

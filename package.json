@@ -31,6 +31,7 @@
     "mssql": "^10.0.1"
   },
   "devDependencies": {
+    "@types/dotenv": "^8.2.3",
     "@types/mssql": "^9.1.4",
     "@types/node": "^20.10.6",
     "@typescript-eslint/eslint-plugin": "^6.17.0",
