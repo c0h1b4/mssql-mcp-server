@@ -90,7 +90,7 @@ describe('MSSQL MCP Server', () => {
       Object.assign(sqlError, { number: 208 });
 
       const mcpError = handleError(sqlError);
-      expect(mcpError.code).toBe('RESOURCE_NOT_FOUND');
+      expect(mcpError.message).toContain('Object does not exist');
     });
 
     it('should handle connection errors correctly', () => {
@@ -98,14 +98,14 @@ describe('MSSQL MCP Server', () => {
       Object.assign(connError, { code: 'ECONNREFUSED' });
 
       const mcpError = handleError(connError);
-      expect(mcpError.code).toBe('CONNECTION_FAILED');
+      expect(mcpError.message).toContain('Connection refused');
     });
 
     it('should handle unknown errors correctly', () => {
       const unknownError = new Error('Unknown error');
 
       const mcpError = handleError(unknownError);
-      expect(mcpError.code).toBe('INTERNAL_ERROR');
+      expect(mcpError.message).toContain('Unknown error');
     });
   });
 

@@ -1,28 +1,37 @@
-import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
+// This file is kept for backward compatibility with tests
+// but the main validation logic is now handled by Zod schemas
+
+import { z } from 'zod';
 import type { QueryParams } from '../types/index.js';
 
 const MAX_QUERY_LENGTH = 1000000; // 1MB
 const DANGEROUS_COMMANDS = ['DROP', 'TRUNCATE', 'ALTER', 'CREATE', 'EXEC', 'EXECUTE', 'sp_', 'xp_'];
 
+// Schema for validating query parameters
+export const QueryParamsSchema = z.object({
+  query: z.string().min(1).max(MAX_QUERY_LENGTH),
+  params: z.record(z.unknown()).optional(),
+  database: z.string().max(128).optional(),
+  timeout: z.number().min(0).max(3600000).optional(),
+});
+
+// Legacy validation function kept for test compatibility
 export function validateQueryParams(params: QueryParams): void {
   // Check query presence
   if (!params.query) {
-    throw new McpError(ErrorCode.InvalidRequest, 'Query is required');
+    throw new Error('Query is required');
   }
 
   // Check query length
   if (params.query.length > MAX_QUERY_LENGTH) {
-    throw new McpError(
-      ErrorCode.InvalidRequest,
-      `Query exceeds maximum length of ${MAX_QUERY_LENGTH} characters`
-    );
+    throw new Error(`Query exceeds maximum length of ${MAX_QUERY_LENGTH} characters`);
   }
 
   // Check for dangerous commands
   const upperQuery = params.query.toUpperCase();
   for (const command of DANGEROUS_COMMANDS) {
     if (upperQuery.includes(command)) {
-      throw new McpError(ErrorCode.InvalidRequest, `Query contains forbidden command: ${command}`);
+      throw new Error(`Query contains forbidden command: ${command}`);
     }
   }
 
@@ -46,30 +55,27 @@ function validateDatabaseName(name: string): void {
   // Check for SQL injection in database name
   const invalidChars = /[;'"\\]/;
   if (invalidChars.test(name)) {
-    throw new McpError(ErrorCode.InvalidRequest, 'Database name contains invalid characters');
+    throw new Error('Database name contains invalid characters');
   }
 
   // Check database name length
   if (name.length > 128) {
-    throw new McpError(
-      ErrorCode.InvalidRequest,
-      'Database name exceeds maximum length of 128 characters'
-    );
+    throw new Error('Database name exceeds maximum length of 128 characters');
   }
 }
 
 function validateTimeout(timeout: number): void {
   if (typeof timeout !== 'number') {
-    throw new McpError(ErrorCode.InvalidRequest, 'Timeout must be a number');
+    throw new Error('Timeout must be a number');
   }
 
   if (timeout < 0) {
-    throw new McpError(ErrorCode.InvalidRequest, 'Timeout cannot be negative');
+    throw new Error('Timeout cannot be negative');
   }
 
   if (timeout > 3600000) {
     // 1 hour
-    throw new McpError(ErrorCode.InvalidRequest, 'Timeout cannot exceed 1 hour');
+    throw new Error('Timeout cannot exceed 1 hour');
   }
 }
 
@@ -77,12 +83,12 @@ function validateQueryParameters(params: Record<string, unknown>): void {
   for (const [key, value] of Object.entries(params)) {
     // Validate parameter name
     if (!/^[a-zA-Z0-9_]+$/.test(key)) {
-      throw new McpError(ErrorCode.InvalidRequest, `Invalid parameter name: ${key}`);
+      throw new Error(`Invalid parameter name: ${key}`);
     }
 
     // Validate parameter value
     if (!isValidParameterValue(value)) {
-      throw new McpError(ErrorCode.InvalidRequest, `Invalid parameter value for ${key}`);
+      throw new Error(`Invalid parameter value for ${key}`);
     }
   }
 }
