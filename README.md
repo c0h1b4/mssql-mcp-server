@@ -2,6 +2,8 @@
 
 A Model Context Protocol (MCP) server for connecting to Microsoft SQL Server databases. This server provides tools for executing SQL queries and managing database connections.
 
+**Version Notice:** This project has been upgraded to use Model Context Protocol SDK 1.9.0. See [UPGRADE.md](UPGRADE.md) for details.
+
 ## Installation
 
 ```bash
@@ -68,7 +70,9 @@ const result = await use_mcp_tool({
 });
 ```
 
-## Development
+## Running the Server
+
+### Local Development
 
 ```bash
 # Install dependencies
@@ -80,15 +84,38 @@ npm run dev
 # Build
 npm run build
 
+# Run the built server
+npm start
+```
+
+### Using Docker
+
+```bash
+# Build and start services (SQL Server + MCP server)
+docker-compose up
+
+# Or just build the Docker image
+docker build -t mssql-mcp-server .
+```
+
+## Testing
+
+```bash
 # Run tests
 npm test
 
-# Run linter
-npm run lint
-
-# Format code
-npm run format
+# Run tests with coverage
+npm run test:coverage
 ```
+
+## Security
+
+The server includes safeguards against dangerous SQL operations:
+
+- Blocks potentially harmful commands like DROP, TRUNCATE, ALTER, CREATE, EXEC, etc.
+- Validates all input parameters and database names
+- Sets reasonable limits on query length and timeout
+- Uses connection pooling for better performance and security
 
 ## License
 

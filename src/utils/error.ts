@@ -1,8 +1,10 @@
-import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
+// This file is kept for backward compatibility with tests
+// but the main error handling is now done within the tool implementation
+
 import type { DatabaseError } from '../types/index.js';
 
-export function handleError(error: unknown): McpError {
-  if (error instanceof McpError) {
+export function handleError(error: unknown): Error {
+  if (error instanceof Error) {
     return error;
   }
 
@@ -13,60 +15,57 @@ export function handleError(error: unknown): McpError {
     switch (dbError.number) {
       // Login failed
       case 18456:
-        return new McpError(ErrorCode.AuthenticationFailed, 'Authentication failed');
+        return new Error('Authentication failed');
 
       // Database does not exist
       case 4060:
-        return new McpError(ErrorCode.ResourceNotFound, 'Database does not exist');
+        return new Error('Database does not exist');
 
       // Object (table, view, etc.) does not exist
       case 208:
-        return new McpError(ErrorCode.ResourceNotFound, 'Object does not exist');
+        return new Error('Object does not exist');
 
       // Permission denied
       case 229:
       case 230:
-        return new McpError(ErrorCode.PermissionDenied, 'Insufficient permissions');
+        return new Error('Insufficient permissions');
 
       // Query timeout
       case -2:
-        return new McpError(ErrorCode.Timeout, 'Query execution timeout');
+        return new Error('Query execution timeout');
 
       // Connection timeout
       case -1:
-        return new McpError(ErrorCode.Timeout, 'Connection timeout');
+        return new Error('Connection timeout');
 
       // Constraint violation
       case 547:
-        return new McpError(
-          ErrorCode.InvalidRequest,
-          'Operation would violate database constraints'
-        );
+        return new Error('Operation would violate database constraints');
 
       // Duplicate key
       case 2601:
       case 2627:
-        return new McpError(ErrorCode.InvalidRequest, 'Duplicate key value');
+        return new Error('Duplicate key value');
 
       // Arithmetic overflow
       case 8115:
-        return new McpError(ErrorCode.InvalidRequest, 'Arithmetic overflow error');
+        return new Error('Arithmetic overflow error');
 
       // String or binary data would be truncated
       case 8152:
-        return new McpError(ErrorCode.InvalidRequest, 'Data would be truncated');
+        return new Error('Data would be truncated');
 
       // Invalid object name
       case 201:
-        return new McpError(ErrorCode.InvalidRequest, 'Invalid object name');
+        return new Error('Invalid object name');
 
       // Invalid column name
       case 207:
-        return new McpError(ErrorCode.InvalidRequest, 'Invalid column name');
+        return new Error('Invalid column name');
 
       // Syntax error
       case 102:
-        return new McpError(ErrorCode.InvalidRequest, 'SQL syntax error');
+        return new Error('SQL syntax error');
     }
   }
 
@@ -74,32 +73,22 @@ export function handleError(error: unknown): McpError {
   if (dbError.code) {
     switch (dbError.code) {
       case 'ECONNREFUSED':
-        return new McpError(ErrorCode.ConnectionFailed, 'Connection refused');
+        return new Error('Connection refused');
 
       case 'ETIMEDOUT':
-        return new McpError(ErrorCode.Timeout, 'Connection timed out');
+        return new Error('Connection timed out');
 
       case 'ENOTFOUND':
-        return new McpError(ErrorCode.ConnectionFailed, 'Host not found');
+        return new Error('Host not found');
 
       case 'ENETUNREACH':
-        return new McpError(ErrorCode.ConnectionFailed, 'Network unreachable');
+        return new Error('Network unreachable');
     }
   }
 
   // Generic error handling
   const message = dbError.message || 'An unknown error occurred';
-  const details = {
-    code: dbError.code,
-    number: dbError.number,
-    state: dbError.state,
-    class: dbError.class,
-    serverName: dbError.serverName,
-    procName: dbError.procName,
-    lineNumber: dbError.lineNumber,
-  };
-
-  return new McpError(ErrorCode.InternalError, message, details);
+  return new Error(message);
 }
 
 export function isTransientError(error: unknown): boolean {

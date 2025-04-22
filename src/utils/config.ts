@@ -1,4 +1,3 @@
-import { McpError } from '@modelcontextprotocol/sdk/types.js';
 import type { DatabaseConfig, EnvVars } from '../types/index.js';
 
 const DEFAULT_PORT = 1433;
@@ -11,19 +10,19 @@ const DEFAULT_QUERY_TIMEOUT = 30000;
 export function validateConfig(env: EnvVars): DatabaseConfig {
   // Required settings
   if (!env.MSSQL_HOST) {
-    throw new McpError('CONFIG_ERROR', 'MSSQL_HOST is required');
+    throw new Error('MSSQL_HOST is required');
   }
   if (!env.MSSQL_USER) {
-    throw new McpError('CONFIG_ERROR', 'MSSQL_USER is required');
+    throw new Error('MSSQL_USER is required');
   }
   if (!env.MSSQL_PASSWORD) {
-    throw new McpError('CONFIG_ERROR', 'MSSQL_PASSWORD is required');
+    throw new Error('MSSQL_PASSWORD is required');
   }
 
   // Parse and validate port
   const port = parseInt(env.MSSQL_PORT || String(DEFAULT_PORT), 10);
   if (isNaN(port) || port <= 0 || port > 65535) {
-    throw new McpError('CONFIG_ERROR', 'Invalid MSSQL_PORT value');
+    throw new Error('Invalid MSSQL_PORT value');
   }
 
   // Parse pool settings
@@ -40,25 +39,25 @@ export function validateConfig(env: EnvVars): DatabaseConfig {
 
   // Validate pool settings
   if (isNaN(poolMax) || poolMax <= 0) {
-    throw new McpError('CONFIG_ERROR', 'Invalid MSSQL_POOL_MAX value');
+    throw new Error('Invalid MSSQL_POOL_MAX value');
   }
   if (isNaN(poolMin) || poolMin < 0) {
-    throw new McpError('CONFIG_ERROR', 'Invalid MSSQL_POOL_MIN value');
+    throw new Error('Invalid MSSQL_POOL_MIN value');
   }
   if (poolMin > poolMax) {
-    throw new McpError('CONFIG_ERROR', 'MSSQL_POOL_MIN cannot be greater than MSSQL_POOL_MAX');
+    throw new Error('MSSQL_POOL_MIN cannot be greater than MSSQL_POOL_MAX');
   }
   if (isNaN(poolIdleTimeout) || poolIdleTimeout < 0) {
-    throw new McpError('CONFIG_ERROR', 'Invalid MSSQL_POOL_IDLE_TIMEOUT value');
+    throw new Error('Invalid MSSQL_POOL_IDLE_TIMEOUT value');
   }
   if (isNaN(poolAcquireTimeout) || poolAcquireTimeout < 0) {
-    throw new McpError('CONFIG_ERROR', 'Invalid MSSQL_POOL_ACQUIRE_TIMEOUT value');
+    throw new Error('Invalid MSSQL_POOL_ACQUIRE_TIMEOUT value');
   }
 
   // Parse query timeout
   const queryTimeout = parseInt(env.MSSQL_QUERY_TIMEOUT || String(DEFAULT_QUERY_TIMEOUT), 10);
   if (isNaN(queryTimeout) || queryTimeout < 0) {
-    throw new McpError('CONFIG_ERROR', 'Invalid MSSQL_QUERY_TIMEOUT value');
+    throw new Error('Invalid MSSQL_QUERY_TIMEOUT value');
   }
 
   // Parse boolean settings
@@ -104,5 +103,5 @@ function parseBooleanConfig(value: string | undefined, defaultValue: boolean): b
   if (lowercaseValue === 'false' || lowercaseValue === '0') {
     return false;
   }
-  throw new McpError('CONFIG_ERROR', `Invalid boolean value: ${value}`);
+  throw new Error(`Invalid boolean value: ${value}`);
 }
