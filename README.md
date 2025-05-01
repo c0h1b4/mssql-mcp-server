@@ -112,7 +112,12 @@ docker build -t mssql-mcp-server .
 ## Testing
 
 ```bash
+# Run tests
+npm test
 
+# Run tests with coverage
+npm run test:coverage
+```
 
 ## Running evals
 
@@ -120,12 +125,6 @@ The evals package loads an mcp client that then runs the index.ts file, so there
 
 ```bash
 OPENAI_API_KEY=your-key  npx mcp-eval src/evals/evals.ts examples/simple-server.ts
-```
-# Run tests
-npm test
-
-# Run tests with coverage
-npm run test:coverage
 ```
 
 ## Security
