@@ -139,3 +139,5 @@ The server includes safeguards against dangerous SQL operations:
 ## License
 
 MIT
+
+[![MSSQL MCP Server on AI Agents Listing](https://aiagentslisting.com/mssql-mcp-server-3/badge.svg?claim=3c337448993248a3b4a769767a87d692)](https://aiagentslisting.com/mcp/mssql-mcp-server-3)
